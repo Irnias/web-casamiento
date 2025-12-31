@@ -1,0 +1,49 @@
+services:
+  # --- TU APLICACIÓN LARAVEL ---
+  app:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    image: web-casamiento-app
+    ports:
+      - "8000:8000" # Mapeamos puerto local : puerto contenedor
+    volumes:
+      - .:/var/www/html # Sincronizamos tu carpeta actual con el contenedor
+    environment:
+      DB_CONNECTION: pgsql
+      DB_HOST: db
+      DB_PORT: 5432
+      DB_DATABASE: boda
+      DB_USERNAME: root
+      DB_PASSWORD: password
+      REDIS_HOST: redis
+      CACHE_STORE: redis
+      SESSION_DRIVER: redis
+    depends_on:
+      - db
+      - redis
+
+  # --- BASE DE DATOS (POSTGRES) ---
+  db:
+    image: postgres:15-alpine
+    restart: always
+    environment:
+      POSTGRES_DB: boda
+      POSTGRES_USER: root
+      POSTGRES_PASSWORD: password
+    ports:
+      - "5432:5432" # Para que puedas conectarte desde tu gestor de BD en Mac
+    volumes:
+      - db_data:/var/lib/postgresql/data
+
+  # --- CACHÉ Y SESIONES (REDIS) ---
+  redis:
+    image: redis:alpine
+    restart: always
+    volumes:
+      - redis_data:/data
+
+# Volúmenes persistentes (para no perder datos al apagar Docker)
+volumes:
+  db_data:
+  redis_data:
