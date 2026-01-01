@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use App\Enums\RoleEnum;
 use App\Exceptions\FeatureNotActiveException;
 use App\Exceptions\SettingNotFoundException;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
@@ -32,6 +33,19 @@ class Event extends Model
     public function photos(): HasMany
     {
         return $this->hasMany(Photo::class);
+    }
+
+    public function users(): BelongsToMany
+    {
+        return $this->belongsToMany(User::class, 'event_user')
+            ->withPivot('role_id')
+            ->withTimestamps();
+    }
+
+    public function owners(): BelongsToMany
+    {
+        $ownerRoleId = Role::where('name', RoleEnum::OWNER->value)->first()?->id;
+        return $this->users()->wherePivot('role_id', $ownerRoleId);
     }
 
     /**
