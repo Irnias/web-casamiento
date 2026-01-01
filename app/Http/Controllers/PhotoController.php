@@ -49,6 +49,7 @@ class PhotoController extends Controller
             'source' => 'guest',
             'status' => 'pending',
             'uploaded_by_guest_id' => $this->getGuestIdFromSession($event),
+            'message' => $request->input('message')
         ]);
 
         return back()->with('success', '¡Foto subida! Aparecerá en la galería cuando los novios la aprueben.');
