@@ -18,6 +18,30 @@ class RsvpController extends Controller
         return view('login', compact('event'));
     }
 
+    public function login(Event $event): Factory|View|RedirectResponse
+    {
+        if (session()->has("guest_session_{$event->id}")) {
+            return redirect()->route('rsvp.index', $event);
+        }
+
+        return view('guest.login', compact('event'));
+    }
+
+    public function authenticate(LoginData $data, Event $event): RedirectResponse
+    {
+        $guest = $event->guests()
+            ->where('invitation_code', $data->code)
+            ->first();
+
+        if (! $guest) {
+            return back()->withErrors(['code' => 'El código no es válido para este evento.']);
+        }
+
+        session(["guest_session_{$event->id}" => $guest->id]);
+
+        return redirect()->route('rsvp.index', $event);
+    }
+
     public function processLogin(Event $event, LoginData $data): RedirectResponse
     {
         $guest = $event->guests()->where('invitation_code', $data->code)->first();
@@ -34,21 +58,17 @@ class RsvpController extends Controller
         return back()->withErrors(['code' => 'Código no encontrado en este evento. Revisa tu invitación.']);
     }
 
-    public function index(Event $event): Factory|View|RedirectResponse
+    public function index(Event $event): Factory|View
     {
-        if (session('guest_event_id') !== $event->id) {
-            return redirect()->route('login', $event);
-        }
+        $guestId = session("guest_session_{$event->id}");
+        $guest = $event->guests()->findOrFail($guestId);
 
-        $code = session('guest_code');
-        $guests = $event->guests()->where('invitation_code', $code)->get();
-
-        return view('rsvp', compact('guests', 'code', 'event'));
+        return view('rsvp', compact('event', 'guest'));
     }
 
     public function logout(Event $event): RedirectResponse
     {
-        session()->forget(['guest_code', 'guest_event_id']);
-        return redirect()->route('login', $event);
+        session()->forget("guest_session_{$event->id}");
+        return redirect()->route('rsvp.login', $event);
     }
 }

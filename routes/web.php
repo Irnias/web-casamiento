@@ -2,6 +2,7 @@
 
 use App\Http\Controllers\AdminAuthController;
 use App\Http\Controllers\DashboardController;
+use App\Http\Controllers\GuestController;
 use App\Http\Controllers\PhotoController;
 use App\Http\Controllers\RsvpController;
 use Illuminate\Support\Facades\Auth;
@@ -18,9 +19,9 @@ Route::any('/admin/logout', function () {
 Route::prefix('{event:slug}')->group(function () {
 
     // 1. PÚBLICO (Login Invitados)
-    Route::get('/', [RsvpController::class, 'showLogin'])->name('event.login');
-    Route::post('/login', [RsvpController::class, 'processLogin'])->name('login.process');
-    Route::get('/logout', [RsvpController::class, 'logout'])->name('guest.logout');
+    Route::get('/login', [RsvpController::class, 'login'])->name('rsvp.login');
+    Route::post('/login', [RsvpController::class, 'authenticate'])->name('rsvp.authenticate');
+    Route::post('/logout', [RsvpController::class, 'logout'])->name('rsvp.logout');
 
     // 2. PRIVADO INVITADOS (Con Código)
     Route::middleware('guest.auth')->group(function () {
@@ -33,8 +34,15 @@ Route::prefix('{event:slug}')->group(function () {
     Route::middleware(['auth'])->group(function () {
         Route::get('/dashboard', [DashboardController::class, 'index'])->name('dashboard');
         Route::get('/dashboard/fotos', [PhotoController::class, 'pending'])->name('photos.pending');
+        Route::get('/dashboard/invitados', [GuestController::class, 'index'])->name('guests.index');
+
+        // Gestión de fotos
         Route::post('/fotos/{photo}/approve', [PhotoController::class, 'approve'])->name('photos.approve');
         Route::delete('/fotos/{photo}', [PhotoController::class, 'destroy'])->name('photos.destroy');
+
+        // Gestión de Invitados
+        Route::post('/invitados', [GuestController::class, 'store'])->name('guests.store');
+        Route::delete('/invitados/{guest}', [GuestController::class, 'destroy'])->name('guests.destroy');
     });
 
 });

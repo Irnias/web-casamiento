@@ -21,7 +21,7 @@ return new class extends Migration
             $table->string('drink_preferences')->nullable();
             $table->boolean('is_child')->default(false);
             $table->timestamps();
-            $table->unique(['event_id', 'invitation_code']);
+            $table->index(['event_id', 'invitation_code']);
         });
     }
 
