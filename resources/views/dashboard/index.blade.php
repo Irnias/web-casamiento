@@ -25,7 +25,7 @@
                         Logueado como: <strong>{{ Auth::user()->name }}</strong>
                     </span>
 
-                <a href="{{ route('logout', $event) }}"
+                <a href="{{ route('auth.logout') }}"
                    class="text-sm font-medium text-red-600 hover:text-red-800 transition">
                     Cerrar Sesión
                 </a>
@@ -88,7 +88,7 @@
     <h2 class="text-lg font-bold text-slate-900 mb-4">Acciones Rápidas</h2>
     <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
 
-        @if(Auth::user()->hasPermission('manage_photos', $event))
+        @if(Auth::user()->hasPermission(App\Enums\PermissionEnum::from('manage_photos'), $event))
             <a href="#" class="group flex items-center gap-4 p-4 bg-white border border-slate-200 rounded-xl shadow-sm hover:border-indigo-300 hover:shadow-md transition">
                 <div class="p-3 bg-indigo-50 text-indigo-600 rounded-lg group-hover:bg-indigo-600 group-hover:text-white transition">
                     <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-6 h-6">
@@ -102,7 +102,7 @@
             </a>
         @endif
 
-        @if(Auth::user()->hasPermission('view_guests', $event))
+        @if(Auth::user()->hasPermission(App\Enums\PermissionEnum::from('view_guests'), $event))
             <a href="#" class="group flex items-center gap-4 p-4 bg-white border border-slate-200 rounded-xl shadow-sm hover:border-pink-300 hover:shadow-md transition">
                 <div class="p-3 bg-pink-50 text-pink-600 rounded-lg group-hover:bg-pink-600 group-hover:text-white transition">
                     <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-6 h-6">
@@ -116,7 +116,7 @@
             </a>
         @endif
 
-        @if(Auth::user()->hasPermission('configure_event', $event))
+        @if(Auth::user()->hasPermission(App\Enums\PermissionEnum::from('configure_event'), $event))
             <a href="#" class="group flex items-center gap-4 p-4 bg-white border border-slate-200 rounded-xl shadow-sm hover:border-slate-400 hover:shadow-md transition">
                 <div class="p-3 bg-slate-100 text-slate-600 rounded-lg group-hover:bg-slate-700 group-hover:text-white transition">
                     <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-6 h-6">

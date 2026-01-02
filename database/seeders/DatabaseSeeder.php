@@ -2,60 +2,59 @@
 
 namespace Database\Seeders;
 
+use App\Enums\RoleEnum;
 use App\Models\Event;
 use App\Models\Feature;
+use App\Models\Role;
+use App\Models\User;
 use Illuminate\Database\Seeder;
 
 class DatabaseSeeder extends Seeder
 {
     public function run(): void
     {
-        $featRsvp = Feature::firstOrCreate(
-            ['key' => 'rsvp'],
-            ['name' => 'Confirmación de Asistencia']
-        );
+        // 1. Roles y Permisos primero
+        $this->call(RoleSeeder::class);
 
-        $featPhotos = Feature::firstOrCreate(
-            ['key' => 'photos'],
-            ['name' => 'Galería de Fotos']
-        );
+        // 2. Features
+        $featRsvp = Feature::firstOrCreate(['key' => 'rsvp'], ['name' => 'Confirmación de Asistencia']);
+        $featPhotos = Feature::firstOrCreate(['key' => 'photos'], ['name' => 'Galería de Fotos']);
+        $featSongs = Feature::firstOrCreate(['key' => 'songs'], ['name' => 'Lista de Canciones']);
 
-        $featSongs = Feature::firstOrCreate(
-            ['key' => 'songs'],
-            ['name' => 'Lista de Canciones']
-        );
-
-        $boda1 = Event::create([
+        // 3. Crear Boda Rami & Meli
+        $boda = Event::create([
             'name' => 'Boda Rami & Meli',
             'slug' => 'rami-meli',
             'event_date' => '2025-12-20 18:00:00',
         ]);
 
-        $boda1->settings()->createMany([
+        $boda->settings()->createMany([
             ['key' => 'primary_color', 'value' => '#FF5733'],
-            ['key' => 'welcome_message', 'value' => '¡Nos casamos y queremos festejar con vos!'],
+            ['key' => 'welcome_message', 'value' => '¡Nos casamos!'],
         ]);
 
-        $boda1->features()->attach([$featRsvp->id, $featPhotos->id, $featSongs->id]);
+        $boda->features()->attach([$featRsvp->id, $featPhotos->id, $featSongs->id]);
 
-        $boda1->guests()->createMany([
+        // Crear invitados vinculados AL EVENTO
+        $boda->guests()->createMany([
             ['invitation_code' => 'FAMILIA-PEREZ', 'name' => 'Damián y Flor'],
             ['invitation_code' => 'TIO-ALBERTO', 'name' => 'Alberto'],
         ]);
 
-        $boda2 = Event::create([
-            'name' => 'Cumple de Pepe',
-            'slug' => 'cumple-pepe',
-            'event_date' => '2026-01-10 21:00:00',
-        ]);
+        // ==========================================
+        // 4. CREAR USUARIO ADMIN (TU LOGIN)
+        // ==========================================
+        $adminUser = User::firstOrCreate(
+            ['email' => 'admin@test.com'],
+            ['name' => 'Rami Admin', 'password' => bcrypt('password')]
+        );
 
-        $boda2->settings()->create(['key' => 'primary_color', 'value' => '#0000FF']);
+        // Buscar rol Dueño
+        $ownerRole = Role::where('name', RoleEnum::OWNER->value)->first();
 
-        $boda2->features()->attach([$featRsvp->id]);
-
-        $boda2->guests()->create([
-            'invitation_code' => 'FAMILIA-PEREZ',
-            'name' => 'Los Pérez (Amigos de Pepe)',
+        // Vincular Usuario -> Evento -> Rol
+        $boda->users()->syncWithoutDetaching([
+            $adminUser->id => ['role_id' => $ownerRole->id]
         ]);
     }
 }

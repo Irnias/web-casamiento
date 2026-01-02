@@ -23,7 +23,7 @@ class DashboardController extends Controller
             abort(403);
         }
 
-        $owners = $this->eventRepository->getOwnersOptimized($event);
+        $owners = $this->eventRepository->getOwners($event);
 
         $stats = [
             'guests_count' => $event->guests()->count(),
