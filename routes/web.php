@@ -32,6 +32,9 @@ Route::prefix('{event:slug}')->group(function () {
     // 3. ADMIN (Dashboard - Requiere User Auth)
     Route::middleware(['auth'])->group(function () {
         Route::get('/dashboard', [DashboardController::class, 'index'])->name('dashboard');
+        Route::get('/dashboard/fotos', [PhotoController::class, 'pending'])->name('photos.pending');
+        Route::post('/fotos/{photo}/approve', [PhotoController::class, 'approve'])->name('photos.approve');
+        Route::delete('/fotos/{photo}', [PhotoController::class, 'destroy'])->name('photos.destroy');
     });
 
 });

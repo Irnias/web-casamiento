@@ -2,7 +2,9 @@
 
 namespace App\Http\Controllers;
 
+use App\Exceptions\FeatureNotActiveException;
 use App\Models\Event;
+use App\Models\Photo;
 use Illuminate\Contracts\View\Factory;
 use Illuminate\Contracts\View\View;
 use Illuminate\Http\RedirectResponse;
@@ -10,8 +12,35 @@ use Illuminate\Http\Request;
 
 class PhotoController extends Controller
 {
+
+    public function pending(Event $event): Factory|View
+    {
+        $photos = $event->photos()
+            ->where('status', 'pending')
+            ->latest()
+            ->get();
+
+        return view('dashboard.photos.index', compact('event', 'photos'));
+    }
+
+    public function approve(Event $event, Photo $photo): RedirectResponse
+    {
+        $photo->update(['status' => 'approved']);
+        return back()->with('success', '¡Foto aprobada y visible en la galería!');
+    }
+
+    /**
+     * Elimina (rechaza) una foto.
+     */
+    public function destroy(Event $event, Photo $photo): RedirectResponse
+    {
+        $photo->delete();
+        return back()->with('success', 'Foto eliminada correctamente.');
+    }
+
     /**
      * Listar fotos (Galería)
+     * @throws FeatureNotActiveException
      */
     public function index(Event $event): Factory|View
     {
@@ -26,6 +55,7 @@ class PhotoController extends Controller
 
     /**
      * Procesar subida
+     * @throws FeatureNotActiveException
      */
     public function store(Request $request, Event $event): RedirectResponse
     {
