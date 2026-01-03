@@ -19,6 +19,9 @@ Route::any('/admin/logout', function () {
 Route::prefix('{event:slug}')->group(function () {
 
     // 1. PÚBLICO (Login Invitados)
+    Route::get('/', function ($event) {
+        return redirect()->route('rsvp.login', $event);
+    });
     Route::get('/login', [RsvpController::class, 'login'])->name('rsvp.login');
     Route::post('/login', [RsvpController::class, 'authenticate'])->name('rsvp.authenticate');
     Route::post('/logout', [RsvpController::class, 'logout'])->name('rsvp.logout');
@@ -26,6 +29,7 @@ Route::prefix('{event:slug}')->group(function () {
     // 2. PRIVADO INVITADOS (Con Código)
     Route::middleware('guest.auth')->group(function () {
         Route::get('/invitacion', [RsvpController::class, 'index'])->name('rsvp.index');
+        Route::post('/invitacion', [RsvpController::class, 'submit'])->name('rsvp.submit');
         Route::get('/fotos', [PhotoController::class, 'index'])->name('photos.index');
         Route::post('/fotos', [PhotoController::class, 'store'])->name('photos.store');
     });
@@ -45,4 +49,6 @@ Route::prefix('{event:slug}')->group(function () {
         Route::delete('/invitados/{guest}', [GuestController::class, 'destroy'])->name('guests.destroy');
     });
 
+    // 4. Login Magico por url (Para invitados es mas comodo)
+    Route::get('/{code}', [RsvpController::class, 'magicLogin'])->name('rsvp.magic');
 });

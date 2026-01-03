@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\User;
 use Illuminate\Contracts\View\Factory;
 use Illuminate\Contracts\View\View;
 use Illuminate\Http\RedirectResponse;
@@ -25,7 +26,18 @@ class AdminAuthController extends Controller
         if (Auth::attempt($credentials)) {
             $request->session()->regenerate();
 
-            return redirect()->intended('/admin/home');
+            /** @var User $user */
+            $user = Auth::user();
+            $event = $user->events->first();
+
+            if ($event) {
+                return redirect()->route('dashboard', $event);
+            }
+
+            Auth::logout();
+            return back()->withErrors([
+                'email' => 'No tienes ningún evento asignado para administrar.',
+            ]);
         }
 
         return back()->withErrors([
